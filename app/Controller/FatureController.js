@@ -1,88 +1,78 @@
-const CategoryModel = require("../Model/ProductModel/Category");
+const FatureModel = require("../Model/ProductModel/Fature");
 const { response } = require("./Helper");
 
-module.exports.category_add = async (req, resp) => {
-  // if (req.file.filename) {   
-  // const image = `${req.protocol}://${req.get("host")}/` + req.file.path;
-  const image = "image";
-    if (req.body.name) {
-       let category = await CategoryModel.findOne({ name: req.body.name });
-       if (category) {
-         resp.send({
-           error: true,
-           message: "This Category Name Already Used try with another name",
-         });
-       } else {
-         let category = await new CategoryModel({
-           name: req.body.name,
-           image: image,
-           name: req.body.name,
-         });
-         await category.save().then(async () => {
-           response(0, resp, {
-             data: category,
-             message: "Category Create Successfully.",
-           });
-         });
-       }
+module.exports.fature_add = async (req, resp) => {
+  if (req.body.name) {
+    let fature = await FatureModel.findOne({ name: req.body.name });
+    if (fature) {
+      resp.send({
+        error: true,
+        message: "This Fature Name Already Used try with another name",
+      });
     } else {
-      response(1, resp, {
-        data: [],
-        message: "Name not found (key => name)",
+      let fature = await new FatureModel({
+        name: req.body.name,
+      });
+      await fature.save().then(async () => {
+        response(0, resp, {
+          data: fature,
+          message: "Fature Create Successfully.",
+        });
       });
     }
-  // } else {
-  //   response(1, resp, {
-  //     data: [],
-  //     message: "Image not found (key => image)",
-  //   });
-  // }
+  } else {
+    response(1, resp, {
+      data: [],
+      message: "Name not found (key => name)",
+    });
+  }
 };
 
-module.exports.category_edit = async (req, resp) => {
-  // if (req.file.filename) {
-  //   const image = `${req.protocol}://${req.get("host")}/` + req.file.path;
-    const image = "image";
-    if (req.body.name) {
-      let category = await CategoryModel.findOne({ name: req.body.name });
-      if (category) {
-        resp.send({
-          error: true,
-          message: "This Category Name Already Used try with another name",
-        });
-      } else {
-        let category = await new CategoryModel({
+module.exports.fature_edit = async (req, resp) => {
+  console.log(req.body);
+  if (req.body.name) {
+    if (req.body.id) {
+      FatureModel.findOneAndUpdate(
+        {
+          _id: req.body.id,
+        },
+        {
           name: req.body.name,
-          image: image,
-          name: req.body.name,
-        });
-        await category.save().then(async () => {
+        },
+        { upsert: true, useFindAndModify: false }
+      )
+        .then((model) => {
           response(0, resp, {
-            data: category,
-            message: "Category Create Successfully.",
+            data: [],
+            message: "Update Successfully",
+          });
+        })
+        .catch((error) => {
+          response(1, resp, {
+            data: [],
+            message: error.message,
           });
         });
-      }
     } else {
       response(1, resp, {
         data: [],
-        message: "Name not found (key => name)",
+        message: "ID not found (key => id)",
       });
     }
-  // } else {
-  //   response(1, resp, {
-  //     data: [],
-  //     message: "Image not found (key => image)",
-  //   });
-  // }
+  } else {
+    response(1, resp, {
+      data: [],
+      message: "Name not found (key => name)",
+    });
+  }
 };
 
-module.exports.category_status = async (req, resp) => {
+module.exports.fature_status = async (req, resp) => {
   if (req.body.id) {
-    CategoryModel.findOne({ _id: req.body.id })
+    FatureModel.findOne({ _id: req.body.id })
       .then((model) => {
         if (model.status === true) {
-          CategoryModel.findOneAndUpdate(
+          FatureModel.findOneAndUpdate(
             {
               _id: req.body.id,
             },
@@ -90,11 +80,11 @@ module.exports.category_status = async (req, resp) => {
             { upsert: true, useFindAndModify: false }
           )
             .then((model) => {
-              CategoryModel.findOne({ _id: model._id })
+              FatureModel.findOne({ _id: model._id })
                 .then((model) => {
                   response(0, resp, {
                     data: model,
-                    message: "Category inactive successfully",
+                    message: "Fature inactive successfully",
                   });
                 })
                 .catch((error) => {
@@ -112,7 +102,7 @@ module.exports.category_status = async (req, resp) => {
             });
         }
         if (model.status === false) {
-          CategoryModel.findOneAndUpdate(
+          FatureModel.findOneAndUpdate(
             {
               _id: req.body.id,
             },
@@ -120,7 +110,7 @@ module.exports.category_status = async (req, resp) => {
             { upsert: true, useFindAndModify: false }
           )
             .then((model) => {
-              CategoryModel.findOne({ _id: model._id })
+              FatureModel.findOne({ _id: model._id })
                 .then((model) => {
                   response(0, resp, {
                     data: model,
@@ -156,8 +146,8 @@ module.exports.category_status = async (req, resp) => {
   }
 };
 
-module.exports.get_all_category = async (req, resp) => {
-  CategoryModel.find({})
+module.exports.get_all_fature = async (req, resp) => {
+  FatureModel.find({})
     .then((model) => {
       response(0, resp, {
         data: model,
@@ -172,8 +162,8 @@ module.exports.get_all_category = async (req, resp) => {
     });
 };
 
-module.exports.get_all_active_category = async (req, resp) => {
-  CategoryModel.find({ status: true })
+module.exports.get_all_active_fature = async (req, resp) => {
+  FatureModel.find({ status: true })
     .then((model) => {
       response(0, resp, {
         data: model,
@@ -188,9 +178,9 @@ module.exports.get_all_active_category = async (req, resp) => {
     });
 };
 
-module.exports.delete_category_by_id = async (req, resp) => {
+module.exports.delete_fature_by_id = async (req, resp) => {
   if (req.body.id) {
-    CategoryModel.deleteOne({ _id: req.body.id })
+    FatureModel.deleteOne({ _id: req.body.id })
       .then((model) => {
         response(0, resp, {
           data: model,

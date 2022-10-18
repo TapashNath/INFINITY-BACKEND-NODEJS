@@ -23,36 +23,45 @@ module.exports.login = async (req, resp) => {
     if (req.body.password) {
       AdminModel.findOne({ email: req.body.email })
         .then(async (model) => {
-          if (model.status) {
-            if (
-              await Encrypt.comparePassword(req.body.password, model.password)
-            ) {
-              jwt.sign({ model }, jwtKey, async function (err, token) {
-                if (token) {
-                  model.token = token;
-                  response(0, resp, {
-                    data: model,
-                    message: model.name + " you are successfully login.",
-                  });
-                } else {
-                  response(0, resp, {
-                    data: [],
-                    message: error.message,
-                  });
-                }
-              });
+          console.log(model);
+          if (model) {
+            if (model.status) {
+              if (
+                await Encrypt.comparePassword(req.body.password, model.password)
+              ) {
+                jwt.sign({ model }, jwtKey, async function (err, token) {
+                  if (token) {
+                    model.token = token;
+                    response(1, resp, {
+                      data: model,
+                      message: model.name + " you are successfully login.",
+                    });
+                  } else {
+                    response(0, resp, { 
+                      data: [],
+                      message: error.message,
+                    });
+                  }
+                });
+              } else {
+                response(0, resp, {
+                  data: [],
+                  message: "Password not mached",
+                });
+              }
             } else {
               response(0, resp, {
                 data: [],
-                message: "Password not mached",
+                message: "You are not active now. please contact to admin ",
               });
             }
-          } else {
+          } else { 
             response(0, resp, {
               data: [],
-              message: "You are not active now. please contact to admin ",
+              message: "No user found on this email",
             });
           }
+          
         })
         .catch((error) => {
           response(0, resp, {

@@ -1,21 +1,30 @@
-const util = require("util");
 const multer = require("multer");
-const maxSize = 2 * 1024 * 1024;
+const fs = require("fs");
 
-let storage = multer.diskStorage({
+const imageStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, __basedir + "/resources/uploads/");
+    var dir = "uploads/images";
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
-    console.log(file.originalname);
-    cb(null, file.originalname);
+    req.image_name = file.fieldname + "_" + Date.now() + ".png";
+    cb(null, file.fieldname + "_" + Date.now() + ".png");
   },
 });
 
-let uploadFile = multer({
-  storage: storage,
-  limits: { fileSize: maxSize },
-}).single("file");
-
-let uploadFileMiddleware = util.promisify(uploadFile);
-module.exports = uploadFileMiddleware;
+const imageUpload = multer({
+  storage: imageStorage,
+  limits: {
+    fileSize: 10000000, // 1000000 Bytes = 1 MB
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(png|jpg)$/)) {
+      return cb(new Error("Please upload a Image"));
+    }
+    cb(undefined, true);
+  },
+});
+module.exports = imageUpload;
